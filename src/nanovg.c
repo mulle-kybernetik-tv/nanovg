@@ -28,7 +28,7 @@
 #ifndef NVG_NO_STB
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#endif 
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4100)  // unreferenced formal parameter
@@ -1049,7 +1049,7 @@ void nvgGetScissor(NVGcontext* ctx, NVGscissor *scissor)
 void nvgSetScissor(NVGcontext* ctx, NVGscissor *scissor)
 {
 	NVGstate* state = nvg__getState(ctx);
-   
+
 	memcpy( &state->scissor, scissor, sizeof(NVGscissor));
 }
 
@@ -1355,7 +1355,7 @@ static void nvg__tesselateBezier(NVGcontext* ctx,
 void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, float y2,
                                float x3, float y3, float x4, float y4, int type)
 {
-  
+
 	// Power basis.
 	float ax = -x1 + 3*x2 - 3*x3 + x4;
 	float ay = -y1 + 3*y2 - 3*y3 + y4;
@@ -1363,7 +1363,7 @@ void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, floa
 	float by = 3*y1 - 6*y2 + 3*y3;
 	float cx = -3*x1 + 3*x2;
 	float cy = -3*y1 + 3*y2;
-	
+
 	// Transform to forward difference basis (stepsize 1)
 	float px = x1;
 	float py = y1;
@@ -1373,31 +1373,31 @@ void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, floa
 	float ddy = 6*ay + 2*by;
 	float dddx = 6*ax;
 	float dddy = 6*ay;
-	
+
 	//printf("dx: %f, dy: %f\n", dx, dy);
 	//printf("ddx: %f, ddy: %f\n", ddx, ddy);
 	//printf("dddx: %f, dddy: %f\n", dddx, dddy);
-	
+
 	#define AFD_ONE (1<<10)
-	
+
 	int t = 0;
 	int dt = AFD_ONE;
-	
+
 	float tol = ctx->tessTol * 4.0;
-	
+
 	while(t < AFD_ONE) {
-		
+
 		// Flatness measure.
 		float d = ddx*ddx + ddy*ddy + dddx*dddx + dddy*dddy;
-		
+
 		// printf("d: %f, th: %f\n", d, th);
-		
+
 		// Go to higher resolution if we're moving a lot
 		// or overshooting the end.
 		while( (d > tol && dt > 1) || (t+dt > AFD_ONE) ) {
-			
+
 			// printf("up\n");
-			
+
 			// Apply L to the curve. Increase curve resolution.
 			dx = .5 * dx - (1.0/8.0)*ddx + (1.0/16.0)*dddx;
 			dy = .5 * dy - (1.0/8.0)*ddy + (1.0/16.0)*dddy;
@@ -1405,22 +1405,22 @@ void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, floa
 			ddy = (1.0/4.0) * ddy - (1.0/8.0) * dddy;
 			dddx = (1.0/8.0) * dddx;
 			dddy = (1.0/8.0) * dddy;
-			
+
 			// Half the stepsize.
 			dt >>= 1;
-			
+
 			// Recompute d
 			d = ddx*ddx + ddy*ddy + dddx*dddx + dddy*dddy;
-			
+
 		}
-		
+
 		// Go to lower resolution if we're really flat
 		// and we aren't going to overshoot the end.
 		// XXX: tol/32 is just a guess for when we are too flat.
 		while ( (d > 0 && d < tol/32.0f && dt < AFD_ONE) && (t+2*dt <= AFD_ONE) ) {
-			
+
 			// printf("down\n");
-			
+
 			// Apply L^(-1) to the curve. Decrease curve resolution.
 			dx = 2 * dx + ddx;
 			dy = 2 * dy + ddy;
@@ -1428,15 +1428,15 @@ void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, floa
 			ddy = 4 * ddy + 4 * dddy;
 			dddx = 8 * dddx;
 			dddy = 8 * dddy;
-			
+
 			// Double the stepsize.
 			dt <<= 1;
-			
+
 			// Recompute d
 			d = ddx*ddx + ddy*ddy + dddx*dddx + dddy*dddy;
-			
+
 		}
-		
+
 		// Forward differencing.
 		px += dx;
 		py += dy;
@@ -1444,18 +1444,18 @@ void nvg__tesselateBezierAFD(NVGcontext* ctx, float x1, float y1, float x2, floa
 		dy += ddy;
 		ddx += dddx;
 		ddy += dddy;
-		
+
 		// Output a point.
 		nvg__addPoint(ctx, px, py, t > 0 ? type : 0);
-		
+
 		// Advance along the curve.
 		t += dt;
-		
+
 		// Ensure we don't overshoot.
 		assert(t <= AFD_ONE);
-		
+
 	}
-  
+
 }
 
 static void nvg__flattenPaths(NVGcontext* ctx)
@@ -2636,20 +2636,41 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 				break;
 		}
 		prevIter = iter;
-		// Transform corners.
-		nvgTransformPoint(&c[0],&c[1], state->xform, q.x0*invscale, q.y0*invscale);
-		nvgTransformPoint(&c[2],&c[3], state->xform, q.x1*invscale, q.y0*invscale);
-		nvgTransformPoint(&c[4],&c[5], state->xform, q.x1*invscale, q.y1*invscale);
-		nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y1*invscale);
-		// Create triangles
-		if (nverts+6 <= cverts) {
-			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
-			nvg__vset(&verts[nverts], c[2], c[3], q.s1, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[6], c[7], q.s0, q.t1); nverts++;
-			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
-		}
+      if( state->xform[ 3] < 0.0)  // flip vertically ?
+      {
+         nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y0*invscale);
+         nvgTransformPoint(&c[4],&c[5], state->xform, q.x1*invscale, q.y0*invscale);
+         nvgTransformPoint(&c[2],&c[3], state->xform, q.x1*invscale, q.y1*invscale);
+         nvgTransformPoint(&c[0],&c[1], state->xform, q.x0*invscale, q.y1*invscale);
+
+
+         if (nverts+6 <= cverts) {
+           nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t1); nverts++;
+           nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t0); nverts++;
+           nvg__vset(&verts[nverts], c[2], c[3], q.s1, q.t1); nverts++;
+
+           nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t1); nverts++;
+           nvg__vset(&verts[nverts], c[6], c[7], q.s0, q.t0); nverts++;
+           nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t0); nverts++;
+         }
+      }
+      else
+      {
+   		// Transform corners.
+   		nvgTransformPoint(&c[0],&c[1], state->xform, q.x0*invscale, q.y0*invscale);
+   		nvgTransformPoint(&c[2],&c[3], state->xform, q.x1*invscale, q.y0*invscale);
+   		nvgTransformPoint(&c[4],&c[5], state->xform, q.x1*invscale, q.y1*invscale);
+   		nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y1*invscale);
+   		// Create triangles
+   		if (nverts+6 <= cverts) {
+   			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
+   			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
+   			nvg__vset(&verts[nverts], c[2], c[3], q.s1, q.t0); nverts++;
+   			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
+   			nvg__vset(&verts[nverts], c[6], c[7], q.s0, q.t1); nverts++;
+   			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
+   		}
+      }
 	}
 
 	// TODO: add back-end bit to do this just once per frame.
